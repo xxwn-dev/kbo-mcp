@@ -1,0 +1,23 @@
+[project]
+name = "kbo-mcp"
+version = "0.1.0"
+description = "KBO MCP server — 팀 순위 및 경기 일정 조회"
+readme = "README.md"
+authors = [
+    { name = "xxwn-dev", email = "qqndlqqdlqqndl@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "mcp[cli]>=1.0.0",
+    "httpx>=0.28.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.scripts]
+kbo-mcp = "kbo_mcp.server:main"
+
+[build-system]
+requires = ["uv_build>=0.10.12,<0.11.0"]
+build-backend = "uv_build"
