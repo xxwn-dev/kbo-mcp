@@ -27,7 +27,7 @@ async def get_kbo_schedule(
     Args:
         year: 조회할 연도 (예: 2026)
         month: 조회할 월 (1~12)
-        series: 경기 종류 - preseason(시범경기), regular(정규시즌), postseason(포스트시즌). 기본값은 regular
+        series: 경기 종류 - preseason(시범경기), regular(정규시즌), postseason(포스트시즌), all(전체). 기본값은 regular
     """
     return await fetch_schedule(year, month, series)
 

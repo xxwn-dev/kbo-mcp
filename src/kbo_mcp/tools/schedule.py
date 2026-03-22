@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from typing import Literal
 
@@ -13,7 +14,22 @@ SERIES_MAP = {
     "postseason": "3,4,5,7",
 }
 
-SeriesType = Literal["preseason", "regular", "postseason"]
+SeriesType = Literal["preseason", "regular", "postseason", "all"]
+
+
+async def _fetch_one(client, year: int, month: int, sr_id_list: str) -> list:
+    r = await client.post(
+        SCHEDULE_API,
+        data={
+            "leId": "1",
+            "srIdList": sr_id_list,
+            "seasonId": str(year),
+            "gameMonth": f"{month:02d}",
+            "teamId": "0",
+        },
+    )
+    r.raise_for_status()
+    return parse_schedule_response(r.json(), year, month)
 
 
 async def fetch_schedule(
@@ -27,17 +43,16 @@ async def fetch_schedule(
         raise ValueError(f"유효하지 않은 월입니다: {month}")
 
     async with get_http_client() as client:
-        r = await client.post(
-            SCHEDULE_API,
-            data={
-                "leId": "1",
-                "srIdList": SERIES_MAP[series],
-                "seasonId": str(year),
-                "gameMonth": f"{month:02d}",
-                "teamId": "0",
-            },
-        )
-        r.raise_for_status()
+        if series == "all":
+            results = await asyncio.gather(
+                _fetch_one(client, year, month, SERIES_MAP["preseason"]),
+                _fetch_one(client, year, month, SERIES_MAP["regular"]),
+            )
+            games = sorted(
+                results[0] + results[1],
+                key=lambda g: g.date,
+            )
+        else:
+            games = await _fetch_one(client, year, month, SERIES_MAP[series])
 
-    games = parse_schedule_response(r.json(), year, month)
     return ScheduleResult(year=year, month=month, games=games)
